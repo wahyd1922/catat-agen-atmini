@@ -2,18 +2,17 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { WalletCards } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -21,9 +20,10 @@ export function Login() {
     });
 
     if (error) {
-      setError(error.message);
+      toast.error(`Gagal login: ${error.message}`);
       setLoading(false);
     } else {
+      toast.success('Berhasil masuk!');
       navigate('/');
     }
   };
@@ -47,12 +47,6 @@ export function Login() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="rounded-xl bg-red-50 p-4 border border-red-100">
-              <div className="text-sm font-medium text-red-800">{error}</div>
-            </div>
-          )}
-          
           <div className="space-y-5">
             <div>
               <label htmlFor="email-address" className="block text-sm font-semibold text-slate-700 mb-1.5">
@@ -110,9 +104,9 @@ export function Login() {
               type="button"
               onClick={() => {
                 sessionStorage.setItem('demo_mode', 'true');
-                alert('Masuk mode demo (UI Only). Data tidak akan tersimpan ke database.');
+                toast.success('Masuk mode demo (UI Only). Data tidak akan tersimpan.');
                 navigate('/');
-                window.location.reload();
+                setTimeout(() => window.location.reload(), 500);
               }}
               className="mt-6 flex w-full justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm ring-1 ring-inset ring-slate-200 hover:bg-slate-50 transition-all"
             >

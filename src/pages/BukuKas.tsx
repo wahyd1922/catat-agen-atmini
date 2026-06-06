@@ -4,6 +4,7 @@ import { id } from 'date-fns/locale';
 import { ArrowDownRight, ArrowUpRight, Wallet, Trash2, Edit2, X, Calendar as CalendarIcon, Filter } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import toast from 'react-hot-toast';
 
 export function BukuKas() {
   const { user } = useAuth();
@@ -63,18 +64,18 @@ export function BukuKas() {
   };
 
   const handleDelete = async (trxId: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus transaksi ini? Saldo buku kas akan ikut berubah.')) {
-      if (isDemo) {
-        setTransactions(transactions.filter(t => t.id !== trxId));
-        return;
-      }
+    if (isDemo) {
+      setTransactions(transactions.filter(t => t.id !== trxId));
+      toast.success('Transaksi dihapus (Mode Demo)');
+      return;
+    }
 
-      const { error } = await supabase.from('transactions').delete().eq('id', trxId);
-      if (!error) {
-        setTransactions(transactions.filter(t => t.id !== trxId));
-      } else {
-        alert('Gagal menghapus: ' + error.message);
-      }
+    const { error } = await supabase.from('transactions').delete().eq('id', trxId);
+    if (!error) {
+      setTransactions(transactions.filter(t => t.id !== trxId));
+      toast.success('Transaksi berhasil dihapus');
+    } else {
+      toast.error('Gagal menghapus: ' + error.message);
     }
   };
 
@@ -83,6 +84,7 @@ export function BukuKas() {
     if (isDemo) {
       setTransactions(transactions.map(t => t.id === editingTrx.id ? editingTrx : t));
       setEditingTrx(null);
+      toast.success('Transaksi diubah (Mode Demo)');
       return;
     }
 
@@ -98,8 +100,9 @@ export function BukuKas() {
     if (!error) {
       setTransactions(transactions.map(t => t.id === editingTrx.id ? editingTrx : t));
       setEditingTrx(null);
+      toast.success('Transaksi berhasil diubah');
     } else {
-      alert('Gagal mengedit: ' + error.message);
+      toast.error('Gagal mengedit: ' + error.message);
     }
   };
 

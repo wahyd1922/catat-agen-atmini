@@ -2,19 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { WalletCards } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -22,9 +21,10 @@ export function Register() {
     });
 
     if (error) {
-      setError(error.message);
+      toast.error(error.message);
       setLoading(false);
     } else {
+      toast.success('Pendaftaran berhasil!');
       setSuccess(true);
       setLoading(false);
     }
@@ -73,12 +73,6 @@ export function Register() {
         </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleRegister}>
-          {error && (
-            <div className="rounded-xl bg-red-50 p-4 border border-red-100">
-              <div className="text-sm font-medium text-red-800">{error}</div>
-            </div>
-          )}
-          
           <div className="space-y-5">
             <div>
               <label htmlFor="email-address" className="block text-sm font-semibold text-slate-700 mb-1.5">
