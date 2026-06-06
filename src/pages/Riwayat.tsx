@@ -13,6 +13,17 @@ export function Riwayat() {
 
   const isDemo = sessionStorage.getItem('demo_mode') === 'true';
 
+  const safeFormatDate = (dateString: string) => {
+    try {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '-';
+      return format(date, 'dd MMM yyyy HH:mm', { locale: id });
+    } catch (e) {
+      return '-';
+    }
+  };
+
   useEffect(() => {
     fetchTransactions();
   }, [user]);
