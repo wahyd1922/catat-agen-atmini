@@ -235,9 +235,9 @@ export function BukuKas() {
                       {safeFormatDate(trx.created_at)}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-semibold text-slate-900 block">{trx.notes || trx.type}</span>
+                      <span className="font-semibold text-slate-900 block">{trx.notes || trx.type || 'Transaksi'}</span>
                       <span className="text-xs text-slate-500 mt-0.5 block">
-                        {trx.type.replace('_', ' ')}
+                        {trx.type ? trx.type.replace('_', ' ') : 'Lainnya'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-emerald-600">
