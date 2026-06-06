@@ -35,7 +35,9 @@ export function BukuKas() {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setTransactions(data);
+      setTransactions(data || []);
+    } else {
+      setTransactions([]);
     }
     setLoading(false);
   };
@@ -88,7 +90,9 @@ export function BukuKas() {
   const mutasiKas = useMemo(() => {
     let currentBalance = 0;
     
-    const sorted = [...transactions].sort((a, b) => 
+    const safeTransactions = Array.isArray(transactions) ? transactions : [];
+    
+    const sorted = [...safeTransactions].sort((a, b) => 
       new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     );
 

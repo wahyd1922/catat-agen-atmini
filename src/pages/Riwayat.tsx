@@ -35,7 +35,9 @@ export function Riwayat() {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setTransactions(data);
+      setTransactions(data || []);
+    } else {
+      setTransactions([]);
     }
     setLoading(false);
   };
