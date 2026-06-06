@@ -1,20 +1,63 @@
 import React, { useState } from 'react';
 import { ArrowDownCircle, ArrowUpCircle, Smartphone, Wallet, PlusCircle, MinusCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 
 type TransactionType = 'MODAL_AWAL' | 'TARIK_TUNAI' | 'SETOR_TUNAI' | 'PULSA' | 'PEMASUKAN_LAIN' | 'PENGELUARAN_LAIN';
 
 export function Transaksi() {
+  const { user } = useAuth();
   const [type, setType] = useState<TransactionType>('TARIK_TUNAI');
   const [amount, setAmount] = useState('');
   const [fee, setFee] = useState('');
   const [notes, setNotes] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('Simpan transaksi (Implementasi Database Nanti)');
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState({ type: '', text: '' });
 
   const isFeeDisabled = type === 'MODAL_AWAL' || type === 'PEMASUKAN_LAIN' || type === 'PENGELUARAN_LAIN';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (sessionStorage.getItem('demo_mode')) {
+      alert('Mode Demo: Transaksi tidak disimpan ke database sungguhan.');
+      setAmount(''); setFee(''); setNotes('');
+      return;
+    }
+
+    if (!user) return;
+
+    setIsSubmitting(true);
+    setMessage({ type: '', text: '' });
+
+    const numAmount = parseFloat(amount);
+    const numFee = isFeeDisabled || !fee ? 0 : parseFloat(fee);
+
+    const { error } = await supabase
+      .from('transactions')
+      .insert([
+        {
+          user_id: user.id,
+          type: type,
+          amount: numAmount,
+          fee: numFee,
+          notes: notes || null
+        }
+      ]);
+
+    setIsSubmitting(false);
+
+    if (error) {
+      setMessage({ type: 'error', text: `Gagal menyimpan: ${error.message}` });
+    } else {
+      setMessage({ type: 'success', text: 'Transaksi berhasil disimpan!' });
+      setAmount('');
+      setFee('');
+      setNotes('');
+      
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -24,6 +67,11 @@ export function Transaksi() {
       </div>
 
       <div className="rounded-2xl bg-white shadow-sm border border-slate-200 overflow-hidden">
+        {message.text && (
+          <div className={`p-4 border-b ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+            <p className="text-sm font-medium text-center">{message.text}</p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8">
           <div>
             <label className="text-sm font-semibold text-slate-900 mb-4 block">Pilih Jenis Transaksi</label>

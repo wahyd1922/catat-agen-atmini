@@ -1,60 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { ArrowDownCircle, ArrowUpCircle, Smartphone, Wallet, PlusCircle, MinusCircle, Edit2, Trash2, X } from 'lucide-react';
-
-const initialDummyTransactions = [
-  { id: 1, type: 'MODAL_AWAL', amount: 2000000, fee: 0, notes: 'Modal laci pagi', created_at: new Date(Date.now() - 86400000).toISOString() },
-  { id: 2, type: 'TARIK_TUNAI', amount: 500000, fee: 5000, notes: 'Tarik BNI', created_at: new Date(Date.now() - 43200000).toISOString() },
-  { id: 3, type: 'SETOR_TUNAI', amount: 1000000, fee: 10000, notes: 'Setor BRI', created_at: new Date(Date.now() - 3600000).toISOString() },
-  { id: 4, type: 'PULSA', amount: 52000, fee: 2000, notes: 'Pulsa Telkomsel 50k', created_at: new Date(Date.now() - 7200000).toISOString() },
-  { id: 5, type: 'PENGELUARAN_LAIN', amount: 15000, fee: 0, notes: 'Beli kertas struk thermal', created_at: new Date(Date.now() - 1800000).toISOString() },
-];
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 
 export function Riwayat() {
-  const [transactions, setTransactions] = useState(initialDummyTransactions);
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [editingTrx, setEditingTrx] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'MODAL_AWAL': return <Wallet className="h-5 w-5 text-indigo-500" />;
-      case 'TARIK_TUNAI': return <ArrowDownCircle className="h-5 w-5 text-blue-500" />;
-      case 'SETOR_TUNAI': return <ArrowUpCircle className="h-5 w-5 text-emerald-500" />;
-      case 'PULSA': return <Smartphone className="h-5 w-5 text-purple-500" />;
-      case 'PEMASUKAN_LAIN': return <PlusCircle className="h-5 w-5 text-teal-500" />;
-      case 'PENGELUARAN_LAIN': return <MinusCircle className="h-5 w-5 text-red-500" />;
-      default: return null;
+  const isDemo = sessionStorage.getItem('demo_mode');
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [user]);
+
+  const fetchTransactions = async () => {
+    if (isDemo) {
+      setTransactions([
+        { id: '1', type: 'MODAL_AWAL', amount: 2000000, fee: 0, notes: 'Modal laci pagi', created_at: new Date(Date.now() - 86400000).toISOString() },
+        { id: '2', type: 'TARIK_TUNAI', amount: 500000, fee: 5000, notes: 'Tarik BNI', created_at: new Date(Date.now() - 43200000).toISOString() },
+      ]);
+      setLoading(false);
+      return;
     }
-  };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'MODAL_AWAL': return 'Modal Kas';
-      case 'TARIK_TUNAI': return 'Tarik Tunai';
-      case 'SETOR_TUNAI': return 'Setor Tunai';
-      case 'PULSA': return 'Pulsa/Token';
-      case 'PEMASUKAN_LAIN': return 'Pemasukan';
-      case 'PENGELUARAN_LAIN': return 'Pengeluaran';
-      default: return type;
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setTransactions(data);
     }
+    setLoading(false);
   };
 
-  const formatRupiah = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount);
-  };
-
-  const handleDelete = (id: number) => {
+  const handleDelete = async (trxId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus transaksi ini? Saldo buku kas akan ikut berubah.')) {
-      setTransactions(transactions.filter(t => t.id !== id));
-      alert('Mode Demo: Transaksi dihapus (hanya di tampilan)');
+      if (isDemo) {
+        setTransactions(transactions.filter(t => t.id !== trxId));
+        return;
+      }
+
+      const { error } = await supabase.from('transactions').delete().eq('id', trxId);
+      if (!error) {
+        setTransactions(transactions.filter(t => t.id !== trxId));
+      } else {
+        alert('Gagal menghapus: ' + error.message);
+      }
     }
   };
 
-  const handleEditSave = (e: React.FormEvent) => {
+  const handleEditSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTransactions(transactions.map(t => t.id === editingTrx.id ? editingTrx : t));
-    setEditingTrx(null);
-    alert('Mode Demo: Transaksi berhasil diubah (hanya di tampilan)');
+    if (isDemo) {
+      setTransactions(transactions.map(t => t.id === editingTrx.id ? editingTrx : t));
+      setEditingTrx(null);
+      return;
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .update({
+        amount: editingTrx.amount,
+        fee: editingTrx.fee,
+        notes: editingTrx.notes
+      })
+      .eq('id', editingTrx.id);
+
+    if (!error) {
+      setTransactions(transactions.map(t => t.id === editingTrx.id ? editingTrx : t));
+      setEditingTrx(null);
+    } else {
+      alert('Gagal mengedit: ' + error.message);
+    }
   };
 
   const isFeeDisabled = editingTrx?.type === 'MODAL_AWAL' || editingTrx?.type === 'PEMASUKAN_LAIN' || editingTrx?.type === 'PENGELUARAN_LAIN';
@@ -80,7 +104,13 @@ export function Riwayat() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {transactions.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                    Memuat data...
+                  </td>
+                </tr>
+              ) : transactions.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                     Belum ada data transaksi.
