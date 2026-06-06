@@ -11,7 +11,7 @@ export function Riwayat() {
   const [editingTrx, setEditingTrx] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const isDemo = sessionStorage.getItem('demo_mode');
+  const isDemo = sessionStorage.getItem('demo_mode') === 'true';
 
   useEffect(() => {
     fetchTransactions();
