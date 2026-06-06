@@ -7,7 +7,6 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Transaksi } from './pages/Transaksi';
-import { Riwayat } from './pages/Riwayat';
 import { BukuKas } from './pages/BukuKas';
 
 function App() {
@@ -20,7 +19,6 @@ function App() {
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/transaksi" element={<Transaksi />} />
-            <Route path="/riwayat" element={<Riwayat />} />
             <Route path="/buku-kas" element={<BukuKas />} />
           </Route>
         </Routes>

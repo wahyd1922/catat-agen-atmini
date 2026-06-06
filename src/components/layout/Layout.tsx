@@ -25,7 +25,6 @@ export function Layout() {
     { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Catat Transaksi', href: '/transaksi', icon: ArrowRightLeft },
     { name: 'Buku Kas Laci', href: '/buku-kas', icon: BookOpenText },
-    { name: 'Riwayat Detail', href: '/riwayat', icon: History },
   ];
 
   if (!user && !sessionStorage.getItem('demo_mode')) {
