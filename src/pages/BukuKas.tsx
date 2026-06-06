@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { format, subDays, isSameDay } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { ArrowDownRight, ArrowUpRight, Wallet, Trash2, Edit2, X, Calendar as CalendarIcon, Filter } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Wallet, Trash2, Edit2, X, Calendar as CalendarIcon, Filter, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import toast from 'react-hot-toast';
@@ -10,6 +10,7 @@ export function BukuKas() {
   const { user } = useAuth();
   const [transactions, setTransactions] = useState<any[]>([]);
   const [editingTrx, setEditingTrx] = useState<any>(null);
+  const [deletingTrxId, setDeletingTrxId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>('ALL');
 
@@ -63,19 +64,24 @@ export function BukuKas() {
     }
   };
 
-  const handleDelete = async (trxId: string) => {
+  const handleDeleteConfirm = async () => {
+    if (!deletingTrxId) return;
+    
     if (isDemo) {
-      setTransactions(transactions.filter(t => t.id !== trxId));
+      setTransactions(transactions.filter(t => t.id !== deletingTrxId));
+      setDeletingTrxId(null);
       toast.success('Transaksi dihapus (Mode Demo)');
       return;
     }
 
-    const { error } = await supabase.from('transactions').delete().eq('id', trxId);
+    const { error } = await supabase.from('transactions').delete().eq('id', deletingTrxId);
     if (!error) {
-      setTransactions(transactions.filter(t => t.id !== trxId));
+      setTransactions(transactions.filter(t => t.id !== deletingTrxId));
+      setDeletingTrxId(null);
       toast.success('Transaksi berhasil dihapus');
     } else {
       toast.error('Gagal menghapus: ' + error.message);
+      setDeletingTrxId(null);
     }
   };
 
@@ -293,7 +299,7 @@ export function BukuKas() {
                           <Edit2 className="h-4 w-4" />
                         </button>
                         <button 
-                          onClick={() => handleDelete(trx.id)}
+                          onClick={() => setDeletingTrxId(trx.id)}
                           className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
                           title="Hapus Transaksi"
                         >
@@ -327,7 +333,7 @@ export function BukuKas() {
                     <button onClick={() => setEditingTrx({...trx})} className="p-1.5 text-blue-600 bg-blue-50 rounded-md">
                       <Edit2 className="h-3.5 w-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(trx.id)} className="p-1.5 text-red-600 bg-red-50 rounded-md">
+                    <button onClick={() => setDeletingTrxId(trx.id)} className="p-1.5 text-red-600 bg-red-50 rounded-md">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -442,6 +448,36 @@ export function BukuKas() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {deletingTrxId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden zoom-in-95 duration-200">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="h-8 w-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Hapus Transaksi?</h3>
+              <p className="text-slate-500 text-sm">
+                Tindakan ini tidak dapat dibatalkan. Saldo buku kas Anda akan otomatis dihitung ulang.
+              </p>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button
+                onClick={() => setDeletingTrxId(null)}
+                className="flex-1 px-4 py-3 rounded-xl font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="flex-1 px-4 py-3 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-500 shadow-md shadow-red-500/20 transition-all"
+              >
+                Hapus
+              </button>
+            </div>
           </div>
         </div>
       )}
