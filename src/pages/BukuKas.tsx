@@ -87,6 +87,17 @@ export function BukuKas() {
     }
   };
 
+  const safeFormatDate = (dateString: string) => {
+    try {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '-';
+      return format(date, 'dd MMM yyyy HH:mm', { locale: id });
+    } catch (e) {
+      return '-';
+    }
+  };
+
   const mutasiKas = useMemo(() => {
     let currentBalance = 0;
     
@@ -221,7 +232,7 @@ export function BukuKas() {
                 mutasiKas.map((trx) => (
                   <tr key={trx.id} className="bg-white hover:bg-slate-50/80 transition-colors">
                     <td className="whitespace-nowrap px-6 py-4 text-slate-500">
-                      {format(new Date(trx.created_at), 'dd MMM yyyy HH:mm', { locale: id })}
+                      {safeFormatDate(trx.created_at)}
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-slate-900 block">{trx.notes || trx.type}</span>

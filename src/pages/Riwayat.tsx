@@ -122,7 +122,7 @@ export function Riwayat() {
                 transactions.map((trx) => (
                   <tr key={trx.id} className="bg-white hover:bg-slate-50/80 transition-colors">
                     <td className="whitespace-nowrap px-6 py-4 text-slate-500">
-                      {format(new Date(trx.created_at), 'dd MMM yyyy HH:mm', { locale: id })}
+                      {safeFormatDate(trx.created_at)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
