@@ -186,40 +186,69 @@ export function Dashboard() {
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-slate-600">
-                <tbody className="divide-y divide-slate-100">
-                  {recentTransactions.map((trx) => (
-                    <tr key={trx.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${
-                            trx.type === 'MODAL_AWAL' ? 'bg-indigo-50 text-indigo-600' :
-                            trx.type === 'TARIK_TUNAI' ? 'bg-blue-50 text-blue-600' :
-                            trx.type === 'SETOR_TUNAI' ? 'bg-emerald-50 text-emerald-600' :
-                            trx.type === 'PULSA' ? 'bg-purple-50 text-purple-600' :
-                            trx.type === 'PEMASUKAN_LAIN' ? 'bg-teal-50 text-teal-600' :
-                            'bg-red-50 text-red-600'
-                          }`}>
-                            {trx.type === 'PENGELUARAN_LAIN' ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-slate-900">{trx.notes || trx.type}</p>
-                            <p className="text-xs text-slate-500 mt-0.5">{safeFormatDate(trx.created_at)}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <p className="font-semibold text-slate-900">{formatRupiah(trx.amount)}</p>
-                        {trx.fee > 0 && (
-                          <p className="text-xs font-medium text-emerald-600 mt-0.5">+ Untung {formatRupiah(trx.fee)}</p>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-600">
+            <tbody className="divide-y divide-slate-100">
+              {recentTransactions.map((trx) => (
+                <tr key={trx.id} className="hover:bg-slate-50/50 transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        trx.type === 'MODAL_AWAL' ? 'bg-indigo-50 text-indigo-600' :
+                        trx.type === 'TARIK_TUNAI' ? 'bg-blue-50 text-blue-600' :
+                        trx.type === 'SETOR_TUNAI' ? 'bg-emerald-50 text-emerald-600' :
+                        trx.type === 'PULSA' ? 'bg-purple-50 text-purple-600' :
+                        trx.type === 'PEMASUKAN_LAIN' ? 'bg-teal-50 text-teal-600' :
+                        'bg-red-50 text-red-600'
+                      }`}>
+                        {trx.type === 'PENGELUARAN_LAIN' ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-900">{trx.notes || trx.type}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{safeFormatDate(trx.created_at)}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <p className="font-semibold text-slate-900">{formatRupiah(trx.amount)}</p>
+                    {trx.fee > 0 && (
+                      <p className="text-xs font-medium text-emerald-600 mt-0.5">+ Untung {formatRupiah(trx.fee)}</p>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
+        <div className="md:hidden divide-y divide-slate-100">
+          {recentTransactions.map((trx) => (
+            <div key={trx.id} className="p-4 bg-white flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${
+                  trx.type === 'MODAL_AWAL' ? 'bg-indigo-50 text-indigo-600' :
+                  trx.type === 'TARIK_TUNAI' ? 'bg-blue-50 text-blue-600' :
+                  trx.type === 'SETOR_TUNAI' ? 'bg-emerald-50 text-emerald-600' :
+                  trx.type === 'PULSA' ? 'bg-purple-50 text-purple-600' :
+                  trx.type === 'PEMASUKAN_LAIN' ? 'bg-teal-50 text-teal-600' :
+                  'bg-red-50 text-red-600'
+                }`}>
+                  {trx.type === 'PENGELUARAN_LAIN' ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900 text-sm truncate max-w-[150px]">{trx.notes || trx.type}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{safeFormatDate(trx.created_at)}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-slate-900 text-sm">{formatRupiah(trx.amount)}</p>
+                {trx.fee > 0 && (
+                  <p className="text-[10px] font-medium text-emerald-600 mt-0.5">+{formatRupiah(trx.fee)}</p>
+                )}
+              </div>
             </div>
+          ))}
+        </div>
           )}
         </div>
       </div>
